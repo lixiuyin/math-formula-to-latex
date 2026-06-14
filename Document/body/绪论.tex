@@ -1,0 +1,31 @@
+\section{绪论}
+
+\subsection{选题背景与研究意义}
+
+数学表达式是科学、工程与教育领域知识表达的基本载体。然而，纸质文档、手写笔记与扫描图像中的公式往往以非结构化的图像形式存在，难以被检索、编辑与再利用。将公式图像自动转换为 LaTeX 等结构化标记语言，是文档数字化、学术文献挖掘、智能教育以及面向视障人群的无障碍辅助等应用的关键环节，具有重要的现实意义。
+
+与一般的光学字符识别（OCR）不同，数学表达式识别（Mathematical Expression Recognition, MER）不仅要识别单个符号，更需还原符号之间的二维空间结构——上下标的层级、分式的横线、根式的辖域、矩阵与行列式的排布，以及求和、积分的上下限等。这类“结构化识别”要求模型同时具备视觉感知与语言建模能力，难度显著高于一维文本识别。其中，印刷体公式排版规范、风格统一，相对易于处理；而手写体公式因书写者风格差异大、连笔与潦草普遍、采集图像几何比例多变，识别难度进一步加剧，至今仍是公认的挑战性问题。
+
+本文的研究任务是：给定一张数学表达式图像，端到端地生成与之对应的 LaTeX 词元序列；并在印刷体与手写体两类场景下系统地考察同一方法的性能与可迁移性。
+
+\subsection{国内外研究现状}
+
+早期的数学表达式识别多采用“符号分割—结构分析”的两阶段范式：先切分出单个符号，再借助二维文法或投影规则恢复其空间关系。此类方法依赖大量手工规则，对噪声、粘连与书写风格变化的鲁棒性较差，且分割误差会沿流水线累积。
+
+随着深度学习的发展，研究者将该任务重新表述为“图像到标记”（image-to-markup）的序列生成问题。Deng 等\supercite{dengImagetomarkupGenerationCoarsetofine2017} 提出以卷积网络编码图像、循环网络结合由粗到细注意力解码的端到端框架，并整理了大规模印刷体基准 \texttt{im2latex-100k}\supercite{kanervisto_2016_56198}，奠定了该范式的基础。然而，卷积网络受限于局部感受野，难以充分建模公式中远距离符号之间的结构依赖。
+
+Transformer\supercite{vaswaniAttentionAllYou2017} 凭借自注意力机制对全局依赖的高效建模，迅速成为序列建模的主流架构。在手写数学表达式识别方向，Zhao 等\supercite{zhaoHandwrittenMathematicalExpression2021} 提出双向训练的 Transformer 解码器（BTTR），Ung 等\supercite{ungTransformerbasedMathLanguage2021} 引入基于 Transformer 的数学语言模型，近期的 TAMER\supercite{zhuTAMERTreeawareTransformer2024} 与 PosFormer\supercite{guanPosFormerRecognizingComplex2024} 进一步将公式的树形/位置结构先验融入解码，Zhou 等\supercite{zhouEndtoendFormulaRecognition2022} 亦探索了融合注意力机制的端到端识别方法。在视觉编码方面，Dosovitskiy 等\supercite{dosovitskiyImageWorth16x162021} 提出的 Vision Transformer（ViT）证明了纯 Transformer 直接处理图像块序列的可行性，为以全局自注意力替代卷积主干提供了依据；Sundararaj 等\supercite{sundararajAutomatedLaTeXCode2024} 据此尝试以 ViT 编码手写公式并生成 LaTeX 代码，与本文的技术路线最为接近。在数据资源方面，除印刷体的 \texttt{im2latex-100k} 外，Gervais 等\supercite{gervaisMathWritingDatasetHandwritten2025} 发布的 \texttt{MathWriting} 提供了大规模真实手写样本，为手写场景的评测奠定了基础。
+
+综观已有工作，性能领先的方法往往依赖较高分辨率的输入、专门设计的结构化解码器（如树形解码、由粗到细注意力）或较大的模型容量。相比之下，“纯 Transformer 架构（ViT 编码器 + 标准 Transformer 解码器）在低分辨率、轻量参数规模下的有效性边界”，以及“同一套架构与训练配方在印刷体与手写体之间的可迁移性”，仍缺乏系统、可控的定量刻画。这正是本文试图回答的问题。
+
+\subsection{主要研究内容与组织架构}
+
+围绕上述问题，本文的主要工作与贡献如下：
+
+\begin{enumerate}[label={（\arabic*）}, leftmargin=2em, labelsep=0.5em, itemsep=0pt]
+    \item 构建了一个以 Vision Transformer 为编码器、标准 Transformer 为解码器的端到端图像到 LaTeX 模型。该模型仅含约 $7.73$M 参数、接受 $50\times200$ 的低分辨率灰度输入，采用掩蔽交叉熵损失、AdamW 优化器配合 Transformer 预热—衰减学习率调度，并在输出层引入基于训练语料词频的对数先验偏置；推理阶段提供贪婪解码与带 GNMT 长度惩罚的束搜索。
+    \item 以\textbf{完全相同}的架构与训练配方，在印刷体（\texttt{im2latex-100k}）与手写体（\texttt{MathWriting-human}）两类数据集上开展严格控制变量的对比实验，定量刻画了跨书写者泛化这一手写识别的核心难题，并将印刷体到手写体的性能差距系统地分解为书写者分布偏移、训练样本量不足导致的过拟合、以及输入宽高比失真三个模型与数据层面的成因，外加 BLEU 指标对短序列的放大效应这一测量层面的因素。
+    \item 总结了若干可复现的工程经验：其一，在大批量、强预热的设定下，全局范数梯度裁剪并非可选项，而是保证训练可靠收敛的必要组件（本文给出了无裁剪训练在学习率峰值附近发散并坍缩为退化解的直接证据）；其二，教师强制下的逐词元准确率会系统性高估模型的实际生成能力，因而本文以自回归 BLEU-4 作为衡量真实推理性能的主要指标。
+\end{enumerate}
+
+本文其余部分组织如下：“Vision Transformer 基本原理”一章介绍注意力机制与 ViT 的核心原理；“训练原理”一章阐述评价指标、损失函数、优化器与学习率调度以及正则化策略；“模型构建”一章详述数据预处理、编码器与解码器的具体设计以及训练与推理流程；“结果与评价”一章给出实验设置、主要结果、解码策略与手写场景的对比实验，并展开误差分析、局限性讨论与改进展望。

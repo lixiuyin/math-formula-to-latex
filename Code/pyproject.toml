@@ -1,0 +1,21 @@
+[project]
+name = "math-formula-to-latex"
+version = "0.1.0"
+description = "ViT-based recognition of printed and handwritten mathematical expressions, converting formula images to LaTeX (PyTorch)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.1",
+    "datasets>=2.14",
+    "numpy",
+    "matplotlib",
+    "pillow",
+    "nltk",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

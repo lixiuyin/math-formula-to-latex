@@ -1,0 +1,7 @@
+# Python 3.10+ recommended; PyTorch implementation
+torch>=2.1
+datasets>=2.14
+numpy
+matplotlib
+pillow
+nltk          # optional: only needed for BLEU in evaluation

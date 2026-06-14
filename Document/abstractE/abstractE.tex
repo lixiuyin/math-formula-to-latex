@@ -1,0 +1,20 @@
+\section*{\zihao{-2}Abstract}
+
+Mathematical expression recognition and LaTeX generation is an important research topic at the intersection of computer vision and natural language processing, with broad application prospects in document digitization, educational assistance, and academic research.
+Traditional methods primarily rely on convolutional neural networks, whose limited receptive fields make it difficult to model long-range structural dependencies between mathematical symbols; handwritten expressions, with their large stylistic variation and complex hierarchical structures, are even more challenging.
+This study implements, in PyTorch, an end-to-end framework with a Vision Transformer (ViT) encoder and a standard Transformer decoder for structural recognition of mathematical expression images and LaTeX sequence generation, and systematically evaluates it on both printed and handwritten datasets.
+
+On the model side, the ViT encoder splits the input image into fixed-size patches and models global dependencies among them through stacked pre-norm Transformer blocks; the decoder combines causal self-attention and cross-attention to model intra-sequence context and image--text alignment respectively, with a log-frequency prior bias added to the output layer.
+On the training side, the framework employs a masked cross-entropy loss that ignores padding positions, the AdamW optimizer with the warmup--decay learning rate schedule of the original Transformer and global-norm gradient clipping, a seeded random validation split, and early stopping; at inference time both greedy decoding and beam search with the GNMT length penalty are implemented.
+
+Experiments are conducted on the printed dataset \texttt{im2latex-100k} and the handwritten dataset \texttt{MathWriting-human} with an identical architecture and training recipe.
+On the printed test set, the model achieves $90.14\%$ token-level accuracy and autoregressive BLEU-4 scores of $0.6767$ (greedy) and $0.7012$ (beam search), validating the effectiveness of a pure Transformer architecture with only $7.73$M parameters and low-resolution $50\times200$ inputs.
+The training stability analysis provides direct experimental evidence for the necessity of gradient clipping: under large-batch training with warmup scheduling, an unclipped run diverged near the peak learning rate and collapsed to a degenerate solution, whereas clipping kept training stable throughout.
+
+The handwritten comparison experiment quantitatively reveals the limitations of directly transferring the printed-formula recipe: token-level accuracy drops to $56.63\%$, BLEU-4 to $0.0833$, and beam search no longer yields gains.
+By analyzing the validation--test performance gap, the divergence of training curves, and input geometric distortion, this study decomposes the performance gap into three separately addressable factors --- writer distribution shift, insufficient training samples, and aspect-ratio distortion --- and accordingly proposes full-data training, data augmentation, and aspect-preserving preprocessing as improvement directions.
+
+The results show that the ViT-based end-to-end model performs well on printed mathematical expression recognition; the strictly controlled handwritten comparison characterizes the core challenge of cross-writer generalization, providing a reproducible baseline method and a clear improvement path for subsequent research on handwritten mathematical expression recognition.
+
+\vspace{0.5cm}
+\noindent\textbf{Keywords:} Handwritten Mathematical Expression Recognition; LaTeX Conversion; Vision Transformer; Attention Mechanism; Deep Learning; Image Recognition

@@ -1,0 +1,27 @@
+\appendix
+\renewcommand{\thesubsection}{\Alph{subsection}} % 为附录子章节添加编号 A, B, C, ...
+\addcontentsline{toc}{section}{附\qquad 录}
+\section*{\heiti\zihao{-2}附\qquad 录}
+本研究的核心代码基于 PyTorch 实现，组织为 \texttt{vit\_latex} 程序包，按职责划分为数据处理（分词器与图像预处理）、模型组件（ViT 编码器、Transformer 解码器、生成模型）、训练（损失指标、学习率调度、训练循环）与评估四个子包，构建了从数学表达式图像到 LaTeX 序列的端到端转换流程。以下列出各核心模块的完整实现。
+\subsection{代码一：超参数配置}
+\lstinputlisting[label={lst:lst-config}]{../Code/vit_latex/config.py}
+\subsection{代码二：LaTeX 分词器}
+\lstinputlisting[label={lst:lst-tokenizer}]{../Code/vit_latex/data/tokenizer.py}
+\subsection{代码三：图像预处理与数据加载}
+\lstinputlisting[label={lst:lst-preprocessing}]{../Code/vit_latex/data/preprocessing.py}
+\subsection{代码四：ViT 编码器}
+\lstinputlisting[label={lst:lst-encoder}]{../Code/vit_latex/models/encoder.py}
+\subsection{代码五：Transformer 解码器组件}
+\lstinputlisting[label={lst:lst-decoder}]{../Code/vit_latex/models/decoder.py}
+\subsection{代码六：生成模型与解码策略}
+\lstinputlisting[label={lst:lst-captioner}]{../Code/vit_latex/models/captioner.py}
+\subsection{代码七：损失函数与评价指标}
+\lstinputlisting[label={lst:lst-metrics}]{../Code/vit_latex/training/metrics.py}
+\subsection{代码八：优化器与学习率调度}
+\lstinputlisting[label={lst:lst-scheduler}]{../Code/vit_latex/training/scheduler.py}
+\subsection{代码九：模型训练}
+\lstinputlisting[label={lst:lst-trainer}]{../Code/vit_latex/training/trainer.py}
+\subsection{代码十：性能评估}
+\lstinputlisting[label={lst:lst-evaluator}]{../Code/vit_latex/evaluation/evaluator.py}
+\subsection{代码十一：主程序入口}
+\lstinputlisting[label={lst:lst-main}]{../Code/main.py}
